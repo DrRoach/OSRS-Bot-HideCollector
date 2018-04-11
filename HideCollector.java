@@ -142,7 +142,7 @@ public class HideCollector extends PollingScript<ClientContext> implements Paint
         // Work out how long we've been running for
         long runTime = System.currentTimeMillis() - _startTime;
         long hours = (runTime / 1000) / 3600;
-        long minutes = ((runTime / 1000) / 60) % 3600;
+        long minutes = ((runTime / 1000) / 60) % 60;
         long seconds = (runTime / 1000) % 60;
 
         // Work out our p/h stats
