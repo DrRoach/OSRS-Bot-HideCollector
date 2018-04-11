@@ -10,6 +10,7 @@ import java.util.Random;
 public class Pickup extends Task<ClientContext> {
     private int hideId = 1739;
     private int boneId = 526;
+    private int pickedUp = 0;
 
     // Random number gen to randomly pickup bones
     private Random rand = null;
@@ -31,7 +32,7 @@ public class Pickup extends Task<ClientContext> {
         GroundItem hide = ctx.groundItems.select().id(hideId).nearest().poll();
 
         if (hide.inViewport()) {
-            // 98% of time take hides. 2% take and bury bones
+            // 98% of time take hides. 2% take bones
             if (rand.nextFloat() > 0.02f) {
                 this.pickupHide(hide);
             } else {
@@ -41,6 +42,10 @@ public class Pickup extends Task<ClientContext> {
             ctx.movement.step(hide);
             ctx.camera.turnTo(hide);
         }
+    }
+
+    public int pickedUp() {
+        return pickedUp;
     }
 
     private void pickupHide(GroundItem item) {

@@ -1,10 +1,16 @@
 package scripts;
 
+import org.powerbot.script.PaintListener;
 import org.powerbot.script.PollingScript;
 import org.powerbot.script.Script;
 import org.powerbot.script.Tile;
 import org.powerbot.script.rt4.ClientContext;
 import org.powerbot.script.rt4.TilePath;
+
+import javax.imageio.ImageIO;
+import java.awt.*;
+import java.net.MalformedURLException;
+import java.net.URL;
 
 @Script.Manifest(name="Cow Hide Collector", description="Simple lumbridge cow hide collector and banker")
 
@@ -12,7 +18,7 @@ import org.powerbot.script.rt4.TilePath;
  * Created by Ryan on 11/04/2018.
  */
 
-public class HideCollector extends PollingScript<ClientContext> {
+public class HideCollector extends PollingScript<ClientContext> implements PaintListener {
     public enum State {
         BANK,
         COLLECT,
@@ -37,7 +43,7 @@ public class HideCollector extends PollingScript<ClientContext> {
             new Tile(3239, 3225, 0),
             new Tile(3227, 3218, 0),
             new Tile(3214, 3218, 0),
-            new Tile(3207, 3210, 0)
+            new Tile(3211, 3210, 0)
     };
 
     public static final Tile[] PATH_STAIRS_BANK = {
@@ -77,6 +83,27 @@ public class HideCollector extends PollingScript<ClientContext> {
                 Walk walk = new Walk(ctx, state, pathToBank, pathToField, pathStairsToBank, pathBankToStairs);
                 walk.execute();
                 break;
+        }
+    }
+
+    @Override
+    public void repaint(Graphics g) {
+        Image background = getImage("http://oi46.tinypic.com/2jdkgi1.jpg");
+        Font font1 = new Font("Verdana", 0, 20);
+
+        g.drawImage(background, 7, 280, null);
+
+        g.setColor(Color.WHITE);
+        g.setFont(font1);
+        g.drawString("Hello player", 30, 300);
+    }
+
+    private Image getImage(String url) {
+        try {
+            return ImageIO.read(new URL(url));
+        } catch (Exception ex) {
+            System.out.println(ex.getMessage());
+            return null;
         }
     }
 
