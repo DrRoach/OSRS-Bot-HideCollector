@@ -29,7 +29,8 @@ public class HideCollector extends PollingScript<ClientContext> {
 
     // Path from field to bank
     public static final Tile[] PATH_FIELD_BANK = {
-            new Tile(3258, 3275, 0),
+            new Tile(3253, 3282, 0),
+            new Tile(3258, 3274, 0),
             new Tile(3250, 3266, 0),
             new Tile(3253, 3251, 0),
             new Tile(3260, 3239, 0),
