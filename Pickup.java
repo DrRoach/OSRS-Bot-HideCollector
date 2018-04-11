@@ -44,10 +44,6 @@ public class Pickup extends Task<ClientContext> {
         }
     }
 
-    public int pickedUp() {
-        return pickedUp;
-    }
-
     private void pickupHide(GroundItem item) {
         item.interact("Take", "Cowhide");
     }

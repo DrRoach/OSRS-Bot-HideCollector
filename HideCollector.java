@@ -1,16 +1,16 @@
 package scripts;
 
-import org.powerbot.script.PaintListener;
-import org.powerbot.script.PollingScript;
-import org.powerbot.script.Script;
-import org.powerbot.script.Tile;
+import com.sun.deploy.util.ArrayUtil;
+import org.powerbot.script.*;
 import org.powerbot.script.rt4.ClientContext;
+import org.powerbot.script.rt4.Item;
 import org.powerbot.script.rt4.TilePath;
 
 import javax.imageio.ImageIO;
 import java.awt.*;
-import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.Arrays;
+import java.util.stream.IntStream;
 
 @Script.Manifest(name="Cow Hide Collector", description="Simple lumbridge cow hide collector and banker")
 
@@ -32,6 +32,11 @@ public class HideCollector extends PollingScript<ClientContext> implements Paint
 
     private int boneId = 526;
     private int[] hideId = {1739, 1740};
+
+    // Keep track of how many hides we've picked up
+    private int _hidesCollected = 0;
+    // Keep track of our inventory size
+    private int _inventoryCount = 0;
 
     // Path from field to bank
     public static final Tile[] PATH_FIELD_BANK = {
@@ -60,15 +65,37 @@ public class HideCollector extends PollingScript<ClientContext> implements Paint
         pathToField = ctx.movement.newTilePath(PATH_FIELD_BANK).reverse();
         pathStairsToBank = ctx.movement.newTilePath(PATH_STAIRS_BANK);
         pathBankToStairs = ctx.movement.newTilePath(PATH_STAIRS_BANK).reverse();
+
+        _inventoryCount = ctx.inventory.select().count();
     }
 
     @Override
     public void poll() {
+        // Work out if we have picked up a hide
+        if (_inventoryCount < ctx.inventory.select().count()) {
+            // Make sure we know we've picked something up
+            _inventoryCount++;
+
+            Item lastCollected = ctx.inventory.itemAt(_inventoryCount);
+
+            // Check if our latest item is a hide
+            for (int i = 0; i < hideId.length; i++) {
+                if (hideId[i] == lastCollected.id()) {
+                    _hidesCollected++;
+                    break;
+                }
+            }
+
+        }
+
+        // Work out our state and execute corresponding task
         state = getState();
+
+        System.out.println(state);
 
         switch (state) {
             case BANK:
-                Bank bank = new Bank(ctx, pathToBank, pathToField, pathStairsToBank, pathBankToStairs);
+                Bank bank = new Bank(ctx);
                 bank.execute();
                 break;
             case COLLECT:
@@ -96,7 +123,7 @@ public class HideCollector extends PollingScript<ClientContext> implements Paint
 
         g.setColor(Color.WHITE);
         g.setFont(font1);
-        g.drawString("Hello player", 30, 300);
+        g.drawString("Hello player  - " + _hidesCollected, 30, 300);
     }
 
     private Image getImage(String url) {

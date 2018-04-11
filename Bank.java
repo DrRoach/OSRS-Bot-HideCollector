@@ -12,7 +12,7 @@ public class Bank extends Task<ClientContext> {
 
 
 
-    public Bank(ClientContext ctx, TilePath pathToBank, TilePath pathToField, TilePath pathStairsToBank, TilePath pathBankToStairs) {
+    public Bank(ClientContext ctx) {
         super(ctx);
     }
 
