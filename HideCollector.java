@@ -46,16 +46,18 @@ public class HideCollector extends PollingScript<ClientContext> implements Paint
 
     // Path from field to bank
     public static final Tile[] PATH_FIELD_BANK = {
-            new Tile(3253, 3282, 0),
-            new Tile(3258, 3274, 0),
-            new Tile(3250, 3266, 0),
-            new Tile(3253, 3251, 0),
-            new Tile(3260, 3239, 0),
-            new Tile(3254, 3225, 0),
-            new Tile(3239, 3225, 0),
-            new Tile(3227, 3218, 0),
-            new Tile(3214, 3218, 0),
-            new Tile(3211, 3210, 0)
+            new Tile(3247, 3292, 0),
+            new Tile(3256, 3280, 0),
+            new Tile(3257, 3269, 0),
+            new Tile(3259, 3267, 0),
+            new Tile(3250, 3259, 0),
+            new Tile(3254, 3247, 0),
+            new Tile(3256, 3234, 0),
+            new Tile(3245, 3226, 0),
+            new Tile(3235, 3220, 0),
+            new Tile(3222, 3219, 0),
+            new Tile(3215, 3215, 0),
+            new Tile(3208, 3210, 0)
     };
 
     public static final Tile[] PATH_STAIRS_BANK = {

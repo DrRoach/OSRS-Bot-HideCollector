@@ -43,24 +43,22 @@ public class Walk extends Task<ClientContext> {
     }
 
     private void walkToBank() {
-        GameObject botStairs = ctx.objects.select().id(groundStairs).nearest().poll();
-        GameObject midStairs = ctx.objects.select().id(middleStairs).nearest().poll();
+        GameObject botStairs = ctx.objects.select(5).id(groundStairs).nearest().poll();
+        GameObject midStairs = ctx.objects.select(5).id(middleStairs).nearest().poll();
+        GameObject tStairs = ctx.objects.select(5).id(topStairs).nearest().poll();
 
-        if (ctx.objects.select().id(groundStairs).nearest().isEmpty() && ctx.objects.select().id(middleStairs).isEmpty() &&
-                ctx.objects.select().id(topStairs).nearest().isEmpty()) {
+        if (botStairs.id() == -1 && midStairs.id() == -1 && tStairs.id() == -1) {
             pathToBank.traverse();
         } else if (ctx.objects.select().id(groundStairs).nearest().isEmpty() == false && ctx.inventory.select().count() == 28) {
             if (botStairs.inViewport()) {
-                botStairs.interact("Climb-up");
+                botStairs.interact("Climb-up", "Staircase");
             } else {
-                ctx.movement.step(botStairs);
                 ctx.camera.turnTo(botStairs);
             }
         } else if (ctx.objects.select().id(middleStairs).nearest().isEmpty() == false && ctx.inventory.select().count() == 28) {
             if (midStairs.inViewport()) {
-                midStairs.interact("Climb-up");
+                midStairs.interact("Climb-up", "Staircase");
             } else {
-                ctx.movement.step(midStairs);
                 ctx.camera.turnTo(midStairs);
             }
         } else {
@@ -69,22 +67,22 @@ public class Walk extends Task<ClientContext> {
     }
 
     private void walkToField() {
+        GameObject botStairs = ctx.objects.select().id(groundStairs).nearest().poll();
         GameObject midStairs = ctx.objects.select().id(middleStairs).nearest().poll();
         GameObject tStairs = ctx.objects.select().id(topStairs).nearest().poll();
 
-        if (ctx.objects.select().id(middleStairs).isEmpty() &&
-                ctx.objects.select().id(topStairs).nearest().isEmpty()) {
+        if (botStairs.id() == -1 && midStairs.id() == -1 && tStairs.id() == -1) {
             pathToField.traverse();
         } else if (ctx.objects.select().id(topStairs).nearest().isEmpty() == false && ctx.inventory.select().count() < 28) {
             if (tStairs.inViewport()) {
-                tStairs.interact("Climb-down");
+                tStairs.interact("Climb-down", "Staircase");
             } else {
                 ctx.movement.step(tStairs);
                 ctx.camera.turnTo(tStairs);
             }
         } else if (ctx.objects.select().id(middleStairs).nearest().isEmpty() == false && ctx.inventory.select().count() < 28) {
             if (midStairs.inViewport()) {
-                midStairs.interact("Climb-down");
+                midStairs.interact("Climb-down", "Staircase");
             } else {
                 ctx.movement.step(midStairs);
                 ctx.camera.turnTo(midStairs);
