@@ -48,6 +48,7 @@ public class HideCollector extends PollingScript<ClientContext> implements Paint
 
     public static final Tile[] PATH_STAIRS_BANK = {
         new Tile(3206, 3210, 2),
+        new Tile(3209, 3218, 2),
         new Tile(3209, 3220, 2)
     };
 
@@ -117,7 +118,7 @@ public class HideCollector extends PollingScript<ClientContext> implements Paint
             }
         } else if (ctx.inventory.select().id(boneId).count() > 0) {
             return State.BURY;
-        } else if (ctx.bank.nearest().tile().distanceTo(ctx.players.local()) < 4) {
+        } else if (ctx.bank.nearest().tile().distanceTo(ctx.players.local()) < 3) {
             return State.BANK;
         } else {
             return State.WALK_TO_BANK;
