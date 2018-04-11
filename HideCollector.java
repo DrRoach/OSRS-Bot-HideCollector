@@ -1,16 +1,16 @@
 package scripts;
 
-import com.sun.deploy.util.ArrayUtil;
-import org.powerbot.script.*;
+import org.powerbot.script.PaintListener;
+import org.powerbot.script.PollingScript;
+import org.powerbot.script.Script;
+import org.powerbot.script.Tile;
+import org.powerbot.script.rt4.*;
 import org.powerbot.script.rt4.ClientContext;
-import org.powerbot.script.rt4.Item;
-import org.powerbot.script.rt4.TilePath;
 
 import javax.imageio.ImageIO;
 import java.awt.*;
 import java.net.URL;
-import java.util.Arrays;
-import java.util.stream.IntStream;
+import java.util.Timer;
 
 @Script.Manifest(name="Cow Hide Collector", description="Simple lumbridge cow hide collector and banker")
 
@@ -37,6 +37,12 @@ public class HideCollector extends PollingScript<ClientContext> implements Paint
     private int _hidesCollected = 0;
     // Keep track of our inventory size
     private int _inventoryCount = 0;
+    // Keep track of our run time
+    long _startTime;
+    // The price of hides at start
+    private int _hidePrice = 1;
+    // Keep track of Bury so we know how many bones we've buried
+    private int _bonesBuried = 0 ;
 
     // Path from field to bank
     public static final Tile[] PATH_FIELD_BANK = {
@@ -68,16 +74,21 @@ public class HideCollector extends PollingScript<ClientContext> implements Paint
         pathBankToStairs = ctx.movement.newTilePath(PATH_STAIRS_BANK).reverse();
 
         _inventoryCount = ctx.inventory.select().count();
+
+        _startTime = System.currentTimeMillis();
+
+        GeItem hide = new GeItem(hideId[0]);
+        _hidePrice = hide.price;
     }
 
     @Override
     public void poll() {
         // Work out if we have picked up a hide
         if (_inventoryCount < ctx.inventory.select().count()) {
+            Item lastCollected = ctx.inventory.itemAt(_inventoryCount);
+
             // Make sure we know we've picked something up
             _inventoryCount++;
-
-            Item lastCollected = ctx.inventory.itemAt(_inventoryCount);
 
             // Check if our latest item is a hide
             for (int i = 0; i < hideId.length; i++) {
@@ -92,8 +103,6 @@ public class HideCollector extends PollingScript<ClientContext> implements Paint
         // Work out our state and execute corresponding task
         state = getState();
 
-        System.out.println(state);
-
         switch (state) {
             case BANK:
                 Bank bank = new Bank(ctx);
@@ -107,8 +116,10 @@ public class HideCollector extends PollingScript<ClientContext> implements Paint
                 Bury bury = new Bury(ctx);
                 bury.execute();
                 break;
-            case WALK_TO_BANK:
             case WALK_TO_FIELD:
+                // Make sure that our inventory count is reset
+                _inventoryCount = 0;
+            case WALK_TO_BANK:
                 Walk walk = new Walk(ctx, state, pathToBank, pathToField, pathStairsToBank, pathBankToStairs);
                 walk.execute();
                 break;
@@ -117,14 +128,35 @@ public class HideCollector extends PollingScript<ClientContext> implements Paint
 
     @Override
     public void repaint(Graphics g) {
-        Image background = getImage("http://oi46.tinypic.com/2jdkgi1.jpg");
-        Font font1 = new Font("Verdana", 0, 20);
+        Image background = getImage("http://oi68.tinypic.com/aaem35.jpg");
+        Font font1 = new Font("Raleway", 0, 20);
 
-        g.drawImage(background, 7, 280, null);
+        g.drawImage(background, 0, 295, null);
 
+        // Setup our font
         g.setColor(Color.WHITE);
         g.setFont(font1);
-        g.drawString("Hello player  - " + _hidesCollected, 30, 300);
+
+        // Work out how long we've been running for
+        long runTime = System.currentTimeMillis() - _startTime;
+        long hours = (runTime / 1000) / 3600;
+        long minutes = ((runTime / 1000) / 60) % 3600;
+        long seconds = (runTime / 1000) % 60;
+
+        // Work out our p/h stats
+        float hidesPH = 0;
+        long profitPH = 0;
+        if (_hidesCollected > 0) {
+            hidesPH = _hidesCollected / ((runTime / 1000.0f) / 3600.0f);
+            profitPH = _hidePrice * (long) hidesPH;
+        }
+
+        // Draw our stats to screen
+        g.drawString("" + _hidesCollected, 259, 353);
+        g.drawString("" + (int) hidesPH, 259, 378);
+        g.drawString("" + profitPH, 259, 403);
+        g.drawString("" + _bonesBuried, 423, 351);
+        g.drawString(hours + ":" + minutes + ":" + seconds, 386, 374);
     }
 
     private Image getImage(String url) {
@@ -145,11 +177,16 @@ public class HideCollector extends PollingScript<ClientContext> implements Paint
                 return State.COLLECT;
             }
         } else if (ctx.inventory.select().id(boneId).count() > 0) {
-            return State.BURY;
+            if (ctx.players.local().animation() == -1) {
+                _bonesBuried++;
+                return State.BURY;
+            }
         } else if (ctx.bank.nearest().tile().distanceTo(ctx.players.local()) < 3) {
             return State.BANK;
         } else {
             return State.WALK_TO_BANK;
         }
+
+        return state;
     }
 }

@@ -10,8 +10,6 @@ public class Bank extends Task<ClientContext> {
     private int boneId = 526;
     private int stairId = 16671;
 
-
-
     public Bank(ClientContext ctx) {
         super(ctx);
     }
@@ -31,9 +29,5 @@ public class Bank extends Task<ClientContext> {
             ctx.bank.depositInventory();
             ctx.bank.close();
         }
-    }
-
-    private void deposit() {
-
     }
 }
