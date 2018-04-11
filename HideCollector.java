@@ -43,7 +43,7 @@ public class HideCollector extends PollingScript<ClientContext> {
 
     public static final Tile[] PATH_STAIRS_BANK = {
         new Tile(3206, 3210, 2),
-        new Tile(3208, 3218, 2)
+        new Tile(3209, 3220, 2)
     };
 
     private TilePath pathToBank, pathToField, pathStairsToBank, pathBankToStairs;
@@ -91,7 +91,7 @@ public class HideCollector extends PollingScript<ClientContext> {
             }
         } else if (ctx.inventory.select().id(boneId).count() > 0) {
             return State.BURY;
-        } else if (ctx.bank.nearest().tile().distanceTo(ctx.players.local()) < 5) {
+        } else if (ctx.bank.nearest().tile().distanceTo(ctx.players.local()) < 4) {
             return State.BANK;
         } else {
             return State.WALK_TO_BANK;
