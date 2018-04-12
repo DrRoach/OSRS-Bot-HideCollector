@@ -10,6 +10,7 @@ import org.powerbot.script.rt4.ClientContext;
 import javax.imageio.ImageIO;
 import java.awt.*;
 import java.net.URL;
+import java.util.Random;
 import java.util.Timer;
 
 @Script.Manifest(name="Cow Hide Collector", description="Simple lumbridge cow hide collector and banker")
@@ -44,20 +45,20 @@ public class HideCollector extends PollingScript<ClientContext> implements Paint
     // Keep track of Bury so we know how many bones we've buried
     private int _bonesBuried = 0 ;
 
+    private Random rand;
+
     // Path from field to bank
     public static final Tile[] PATH_FIELD_BANK = {
-            new Tile(3247, 3292, 0),
-            new Tile(3256, 3280, 0),
-            new Tile(3257, 3269, 0),
-            new Tile(3259, 3267, 0),
-            new Tile(3250, 3259, 0),
-            new Tile(3254, 3247, 0),
-            new Tile(3256, 3234, 0),
-            new Tile(3245, 3226, 0),
-            new Tile(3235, 3220, 0),
-            new Tile(3222, 3219, 0),
-            new Tile(3215, 3215, 0),
-            new Tile(3208, 3210, 0)
+            new Tile(3252, 3286, 0),
+            new Tile(3256, 3278, 0),
+            new Tile(3259, 3270, 0),
+            new Tile(3250, 3264, 0),
+            new Tile(3255, 3249, 0),
+            new Tile(3257, 3233, 0),
+            new Tile(3244, 3226, 0),
+            new Tile(3231, 3219, 0),
+            new Tile(3215, 3218, 0),
+            new Tile(3207, 3210, 0)
     };
 
     public static final Tile[] PATH_STAIRS_BANK = {
@@ -81,6 +82,8 @@ public class HideCollector extends PollingScript<ClientContext> implements Paint
 
         GeItem hide = new GeItem(hideId[0]);
         _hidePrice = hide.price;
+
+        rand = new Random();
     }
 
     @Override
@@ -99,7 +102,18 @@ public class HideCollector extends PollingScript<ClientContext> implements Paint
                     break;
                 }
             }
+        }
 
+        // Check to see if we should turn on running
+        if (!ctx.movement.running()) {
+            int energyLevel = ctx.movement.energyLevel();
+            if (energyLevel > 95) {
+                ctx.movement.running(true);
+            } else if (energyLevel > 70 && rand.nextFloat() < 0.1f) {
+                ctx.movement.running(true);
+            } else if (energyLevel > 40 && rand.nextFloat() < 0.01f) {
+                ctx.movement.running(true);
+            }
         }
 
         // Work out our state and execute corresponding task
@@ -183,7 +197,7 @@ public class HideCollector extends PollingScript<ClientContext> implements Paint
                 _bonesBuried++;
                 return State.BURY;
             }
-        } else if (ctx.bank.nearest().tile().distanceTo(ctx.players.local()) < 3) {
+        } else if (ctx.bank.nearest().tile().distanceTo(ctx.players.local()) < 4) {
             return State.BANK;
         } else {
             return State.WALK_TO_BANK;

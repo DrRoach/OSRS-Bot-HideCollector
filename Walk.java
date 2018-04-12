@@ -67,11 +67,10 @@ public class Walk extends Task<ClientContext> {
     }
 
     private void walkToField() {
-        GameObject botStairs = ctx.objects.select().id(groundStairs).nearest().poll();
         GameObject midStairs = ctx.objects.select().id(middleStairs).nearest().poll();
         GameObject tStairs = ctx.objects.select().id(topStairs).nearest().poll();
 
-        if (botStairs.id() == -1 && midStairs.id() == -1 && tStairs.id() == -1) {
+        if (midStairs.id() == -1 && tStairs.id() == -1) {
             pathToField.traverse();
         } else if (ctx.objects.select().id(topStairs).nearest().isEmpty() == false && ctx.inventory.select().count() < 28) {
             if (tStairs.inViewport()) {
