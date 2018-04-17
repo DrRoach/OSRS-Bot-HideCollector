@@ -15,7 +15,8 @@ public class OpenGate extends Task<ClientContext> {
 
     @Override
     public boolean activate() {
-        return !ctx.objects.select(15).id(GATE_ID).nearest().isEmpty();
+        return !ctx.objects.select(15).id(GATE_ID).nearest().isEmpty()
+                && (ctx.inventory.select().count() == 0 || ctx.inventory.select().count() == 28);
     }
 
     @Override
