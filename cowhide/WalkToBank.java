@@ -21,7 +21,8 @@ public class WalkToBank extends Task<ClientContext> {
     @Override
     public boolean activate() {
         return ctx.inventory.select().count() == 28
-                && ctx.bank.nearest().tile().distanceTo(ctx.players.local()) > 4;
+                && ctx.bank.nearest().tile().distanceTo(ctx.players.local()) > 4
+                && !ctx.players.local().inMotion();
     }
 
     @Override

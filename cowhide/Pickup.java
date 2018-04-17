@@ -15,7 +15,9 @@ public class Pickup extends Task<ClientContext> {
     public boolean activate() {
         // Check to make sure we are wanting to pickup hide
         return ctx.inventory.select().count() < 28
-                && !ctx.groundItems.select().id(HideCollector.HIDE_IDS).isEmpty();
+                && !ctx.groundItems.select().id(HideCollector.HIDE_IDS).isEmpty()
+                && !ctx.players.local().inMotion();
+
     }
 
     public void execute() {

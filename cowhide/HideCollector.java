@@ -113,7 +113,8 @@ public class HideCollector extends PollingScript<ClientContext> implements Paint
         bury = new Bury(ctx);
 
         taskList.addAll(Arrays.asList(new Bank(ctx), bury, new Pickup(ctx),
-                new WalkToBank(ctx, pathToBank, pathStairsToBank), new WalkToField(ctx, pathToField, pathBankToStairs)));
+                new WalkToBank(ctx, pathToBank, pathStairsToBank), new WalkToField(ctx, pathToField, pathBankToStairs),
+                new OpenGate(ctx)));
     }
 
     @Override
