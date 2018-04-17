@@ -6,7 +6,12 @@ import org.powerbot.script.rt4.ClientContext;
 import org.powerbot.script.rt4.GeItem;
 
 import javax.imageio.ImageIO;
+import javax.swing.*;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -18,13 +23,15 @@ import java.util.List;
  * Created by Ryan on 11/04/2018.
  */
 
-public class HideCollector extends PollingScript<ClientContext> implements PaintListener {
+public class HideCollector extends PollingScript<ClientContext> implements PaintListener, ChangeListener {
     final static int BONE_ID = 526;
     final static int[] HIDE_IDS = {1739, 1740};
     final static int BOTTOM_STAIRS = 16671;
     final static int MIDDLE_STAIRS = 16672;
     final static int TOP_STAIRS = 16673;
     final static Random RAND = new Random();
+    // Rate at which we pickup bones. This is a %
+    public static int BONE_PICKUP_RATE = 2;
 
     // Keep track of how many hides we've picked up
     private int HIDES_COLLECTED = 0;
@@ -32,8 +39,9 @@ public class HideCollector extends PollingScript<ClientContext> implements Paint
     private int INVENTORY_COUNT = 0;
     // The price of hides at start
     private int HIDE_PRICE = 1;
-    // Keep track of Bury so we know how many bones we've buried
-    private int BONES_BURIED = 0 ;
+
+
+    private Bury bury;
 
     // Path from field to bank
     private static final Tile[] PATH_FIELD_BANK = {
@@ -71,7 +79,38 @@ public class HideCollector extends PollingScript<ClientContext> implements Paint
         GeItem hide = new GeItem(HIDE_IDS[0]);
         HIDE_PRICE = hide.price;
 
-        taskList.addAll(Arrays.asList(new Bank(ctx), new Bury(ctx), new Pickup(ctx),
+        // Display slider to make user choose how often to pickup bones
+        JPanel setup = new JPanel();
+        JSlider boneRate = new JSlider(JSlider.HORIZONTAL, 0, 50, 5);
+        boneRate.addChangeListener(this);
+        boneRate.setMajorTickSpacing(10);
+        boneRate.setMinorTickSpacing(1);
+        boneRate.setPaintTicks(true);
+        boneRate.setPaintLabels(true);
+
+        final JFrame frame = new JFrame("Setup");
+        JButton okayButton = new JButton("Okay");
+        okayButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                frame.setVisible(false);
+            }
+        });
+
+        setup.add(boneRate);
+        setup.add(okayButton);
+
+        setup.setVisible(true);
+
+        frame.setContentPane(setup);
+        frame.pack();
+        frame.setLocationRelativeTo(null);
+        frame.setVisible(true);
+
+        // We need to store Bury so that we know how many bones we've buried in paint
+        bury = new Bury(ctx);
+
+        taskList.addAll(Arrays.asList(new Bank(ctx), bury, new Pickup(ctx),
                 new WalkToBank(ctx, pathToBank, pathStairsToBank), new WalkToField(ctx, pathToField, pathBankToStairs)));
     }
 
@@ -142,23 +181,29 @@ public class HideCollector extends PollingScript<ClientContext> implements Paint
             profitPH = HIDE_PRICE * (long) hidesPH;
         }
 
+        int bonesBuried = 0;
+        if (bury != null) {
+            bonesBuried = bury.bonesBuried();
+        }
+
         // Draw our stats to screen
         g.drawString("Hides Collected: " + HIDES_COLLECTED, 20, 40);
         g.drawString("Hides PH: " + (int) hidesPH, 20, 55);
         g.drawString("Profit PH: " + profitPH, 20, 70);
-        g.drawString("Bones Buried: " + BONES_BURIED, 20, 85);
+        g.drawString("Bones Buried: " + bonesBuried, 20, 85);
         g.drawString("Time Ran: " + String.format("%02d", hours) + ":" + String.format("%02d", minutes) + ":" + String.format("%02d", seconds), 20, 100);
 
-        Font byFont = new Font("Raleway", 0, 8);
+        Font byFont = new Font("Raleway",1, 8);
+        g.setFont(byFont);
         g.drawString("Made by DrRoach", 20, 125);
     }
 
-    private Image getImage(String url) {
-        try {
-            return ImageIO.read(new URL(url));
-        } catch (Exception ex) {
-            System.out.println(ex.getMessage());
-            return null;
+    @Override
+    public void stateChanged(ChangeEvent e) {
+        JSlider source = (JSlider) e.getSource();
+
+        if (!source.getValueIsAdjusting()) {
+            BONE_PICKUP_RATE = (int) source.getValue();
         }
     }
 }

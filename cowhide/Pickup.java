@@ -23,7 +23,7 @@ public class Pickup extends Task<ClientContext> {
 
         if (hide.inViewport()) {
             // 98% of time take hides. 2% take bones
-            if (HideCollector.RAND.nextInt(0, 99) >= 2) {
+            if (HideCollector.RAND.nextInt(0, 99) >= HideCollector.BONE_PICKUP_RATE) {
                 hide.interact("Take", "Cowhide");
             } else {
                 hide.interact("Take", "Bones");

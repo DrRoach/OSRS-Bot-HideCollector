@@ -7,6 +7,8 @@ import org.powerbot.script.rt4.Item;
  * Created by Ryan on 11/04/2018.
  */
 public class Bury extends Task<ClientContext> {
+    private int BONES_BURIED = 0;
+
     public Bury(ClientContext ctx) {
         super(ctx);
     }
@@ -19,7 +21,16 @@ public class Bury extends Task<ClientContext> {
 
     public void execute() {
         for (Item i : ctx.inventory.id(HideCollector.BONE_ID)) {
-            i.interact("Bury");
+            // If we're not already burying then bury
+            if (ctx.players.local().animation() == -1) {
+                i.interact("Bury");
+                BONES_BURIED++;
+                break;
+            }
         }
+    }
+
+    public int bonesBuried() {
+        return BONES_BURIED;
     }
 }
