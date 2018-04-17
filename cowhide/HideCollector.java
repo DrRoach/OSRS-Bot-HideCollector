@@ -10,6 +10,9 @@ import org.powerbot.script.rt4.ClientContext;
 import javax.imageio.ImageIO;
 import java.awt.*;
 import java.net.URL;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 import java.util.Random;
 
 @Script.Manifest(name="Cow Hide Collector", description="Simple lumbridge cow hide collector and banker")
@@ -19,26 +22,18 @@ import java.util.Random;
  */
 
 public class HideCollector extends PollingScript<ClientContext> implements PaintListener {
-    public enum State {
-        BANK,
-        COLLECT,
-        BURY,
-        WALK_TO_BANK,
-        WALK_TO_FIELD
-    }
-
-    // Our state so that we know what we're doing
-    public State state;
-
-    private int boneId = 526;
-    private int[] hideId = {1739, 1740};
+    final static int BONE_ID = 526;
+    final static int[] HIDE_IDS = {1739, 1740};
+    final static int BOTTOM_STAIRS = 16671;
+    final static int MIDDLE_STAIRS = 16672;
+    final static int TOP_STAIRS = 16673;
 
     // Keep track of how many hides we've picked up
-    private int _hidesCollected = 0;
+    private int HIDES_COLLECTED = 0;
     // Keep track of our inventory size
-    private int _inventoryCount = 0;
+    private int INVENTORY_COUNT = 0;
     // Keep track of our run time
-    long _startTime;
+    private long _startTime;
     // The price of hides at start
     private int _hidePrice = 1;
     // Keep track of Bury so we know how many bones we've buried
@@ -47,7 +42,7 @@ public class HideCollector extends PollingScript<ClientContext> implements Paint
     private Random rand;
 
     // Path from field to bank
-    public static final Tile[] PATH_FIELD_BANK = {
+    private static final Tile[] PATH_FIELD_BANK = {
             new Tile(3252, 3286, 0),
             new Tile(3256, 3278, 0),
             new Tile(3259, 3270, 0),
@@ -60,13 +55,15 @@ public class HideCollector extends PollingScript<ClientContext> implements Paint
             new Tile(3207, 3210, 0)
     };
 
-    public static final Tile[] PATH_STAIRS_BANK = {
+    private static final Tile[] PATH_STAIRS_BANK = {
         new Tile(3206, 3210, 2),
         new Tile(3209, 3218, 2),
         new Tile(3209, 3220, 2)
     };
 
     private TilePath pathToBank, pathToField, pathStairsToBank, pathBankToStairs;
+
+    private List<Task> taskList = new ArrayList<Task>();
 
     @Override
     public void start() {
@@ -75,29 +72,32 @@ public class HideCollector extends PollingScript<ClientContext> implements Paint
         pathStairsToBank = ctx.movement.newTilePath(PATH_STAIRS_BANK);
         pathBankToStairs = ctx.movement.newTilePath(PATH_STAIRS_BANK).reverse();
 
-        _inventoryCount = ctx.inventory.select().count();
+        INVENTORY_COUNT = ctx.inventory.select().count();
 
         _startTime = System.currentTimeMillis();
 
-        GeItem hide = new GeItem(hideId[0]);
+        GeItem hide = new GeItem(HIDE_IDS[0]);
         _hidePrice = hide.price;
 
         rand = new Random();
+
+        taskList.addAll(Arrays.asList(new Bank(ctx), new Bury(ctx), new Pickup(ctx),
+                new WalkToBank(ctx, pathToBank, pathStairsToBank), new WalkToField(ctx, pathToField, pathBankToStairs)));
     }
 
     @Override
     public void poll() {
         // Work out if we have picked up a hide
-        if (_inventoryCount < ctx.inventory.select().count()) {
-            Item lastCollected = ctx.inventory.itemAt(_inventoryCount);
+        if (INVENTORY_COUNT < ctx.inventory.select().count()) {
+            Item lastCollected = ctx.inventory.itemAt(INVENTORY_COUNT);
 
             // Make sure we know we've picked something up
-            _inventoryCount++;
+            INVENTORY_COUNT++;
 
             // Check if our latest item is a hide
-            for (int i = 0; i < hideId.length; i++) {
-                if (hideId[i] == lastCollected.id()) {
-                    _hidesCollected++;
+            for (int id : HIDE_IDS) {
+                if (id == lastCollected.id()) {
+                    HIDES_COLLECTED++;
                     break;
                 }
             }
@@ -115,29 +115,10 @@ public class HideCollector extends PollingScript<ClientContext> implements Paint
             }
         }
 
-        // Work out our state and execute corresponding task
-        state = getState();
-
-        switch (state) {
-            case BANK:
-                Bank bank = new Bank(ctx);
-                bank.execute();
-                break;
-            case COLLECT:
-                Pickup pickup = new Pickup(ctx);
-                pickup.execute();
-                break;
-            case BURY:
-                Bury bury = new Bury(ctx);
-                bury.execute();
-                break;
-            case WALK_TO_FIELD:
-                // Make sure that our inventory count is reset
-                _inventoryCount = 0;
-            case WALK_TO_BANK:
-                Walk walk = new Walk(ctx, state, pathToBank, pathToField, pathStairsToBank, pathBankToStairs);
-                walk.execute();
-                break;
+        for (Task task : taskList) {
+            if (task.activate()) {
+                task.execute();
+            }
         }
     }
 
@@ -161,13 +142,13 @@ public class HideCollector extends PollingScript<ClientContext> implements Paint
         // Work out our p/h stats
         float hidesPH = 0;
         long profitPH = 0;
-        if (_hidesCollected > 0) {
-            hidesPH = _hidesCollected / ((runTime / 1000.0f) / 3600.0f);
+        if (HIDES_COLLECTED > 0) {
+            hidesPH = HIDES_COLLECTED / ((runTime / 1000.0f) / 3600.0f);
             profitPH = _hidePrice * (long) hidesPH;
         }
 
         // Draw our stats to screen
-        g.drawString("" + _hidesCollected, 259, 353);
+        g.drawString("" + HIDES_COLLECTED, 259, 353);
         g.drawString("" + (int) hidesPH, 259, 378);
         g.drawString("" + profitPH, 259, 403);
         g.drawString("" + _bonesBuried, 423, 351);
@@ -181,27 +162,5 @@ public class HideCollector extends PollingScript<ClientContext> implements Paint
             System.out.println(ex.getMessage());
             return null;
         }
-    }
-
-    private State getState() {
-        if (ctx.inventory.select().count() < 28) {
-            // Check to see if we are in field
-            if (ctx.groundItems.select().id(hideId).nearest().isEmpty()) {
-                return State.WALK_TO_FIELD;
-            } else {
-                return State.COLLECT;
-            }
-        } else if (ctx.inventory.select().id(boneId).count() > 0) {
-            if (ctx.players.local().animation() == -1) {
-                _bonesBuried++;
-                return State.BURY;
-            }
-        } else if (ctx.bank.nearest().tile().distanceTo(ctx.players.local()) < 4) {
-            return State.BANK;
-        } else {
-            return State.WALK_TO_BANK;
-        }
-
-        return state;
     }
 }

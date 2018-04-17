@@ -8,7 +8,6 @@ import java.util.Random;
  * Created by Ryan on 11/04/2018.
  */
 public class Bury extends Task<ClientContext> {
-    private int boneId = 526;
     private Random rand = null;
 
     public Bury(ClientContext ctx) {
@@ -22,11 +21,11 @@ public class Bury extends Task<ClientContext> {
 
         // If our inventory is full or we make our choice and we have bones then bury them
         return (ctx.inventory.select().count() == 28 || choice < 0.1f)
-                && ctx.inventory.select().id(boneId).count() > 0;
+                && ctx.inventory.select().id(HideCollector.BONE_ID).count() > 0;
     }
 
     public void execute() {
-        for (Item i : ctx.inventory.id(boneId)) {
+        for (Item i : ctx.inventory.id(HideCollector.BONE_ID)) {
             i.interact("Bury");
         }
     }
