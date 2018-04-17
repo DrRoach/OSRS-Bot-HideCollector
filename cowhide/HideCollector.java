@@ -89,6 +89,7 @@ public class HideCollector extends PollingScript<ClientContext> implements Paint
         boneRate.setPaintLabels(true);
 
         final JFrame frame = new JFrame("Setup");
+        JLabel boneLabel = new JLabel("Bone pickup rate. Scale from 0% of time to 50%");
         JButton okayButton = new JButton("Okay");
         okayButton.addActionListener(new ActionListener() {
             @Override
@@ -97,6 +98,7 @@ public class HideCollector extends PollingScript<ClientContext> implements Paint
             }
         });
 
+        setup.add(boneLabel);
         setup.add(boneRate);
         setup.add(okayButton);
 
