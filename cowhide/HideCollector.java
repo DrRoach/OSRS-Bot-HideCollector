@@ -1,11 +1,9 @@
 package scripts.cowhide;
 
-import org.powerbot.script.PaintListener;
-import org.powerbot.script.PollingScript;
-import org.powerbot.script.Script;
-import org.powerbot.script.Tile;
+import org.powerbot.script.*;
 import org.powerbot.script.rt4.*;
 import org.powerbot.script.rt4.ClientContext;
+import org.powerbot.script.rt4.GeItem;
 
 import javax.imageio.ImageIO;
 import java.awt.*;
@@ -13,7 +11,6 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Random;
 
 @Script.Manifest(name="Cow Hide Collector", description="Simple lumbridge cow hide collector and banker")
 
@@ -27,6 +24,7 @@ public class HideCollector extends PollingScript<ClientContext> implements Paint
     final static int BOTTOM_STAIRS = 16671;
     final static int MIDDLE_STAIRS = 16672;
     final static int TOP_STAIRS = 16673;
+    final static Random RAND = new Random();
 
     // Keep track of how many hides we've picked up
     private int HIDES_COLLECTED = 0;
@@ -38,8 +36,6 @@ public class HideCollector extends PollingScript<ClientContext> implements Paint
     private int _hidePrice = 1;
     // Keep track of Bury so we know how many bones we've buried
     private int _bonesBuried = 0 ;
-
-    private Random rand;
 
     // Path from field to bank
     private static final Tile[] PATH_FIELD_BANK = {
@@ -79,8 +75,6 @@ public class HideCollector extends PollingScript<ClientContext> implements Paint
         GeItem hide = new GeItem(HIDE_IDS[0]);
         _hidePrice = hide.price;
 
-        rand = new Random();
-
         taskList.addAll(Arrays.asList(new Bank(ctx), new Bury(ctx), new Pickup(ctx),
                 new WalkToBank(ctx, pathToBank, pathStairsToBank), new WalkToField(ctx, pathToField, pathBankToStairs)));
     }
@@ -108,9 +102,9 @@ public class HideCollector extends PollingScript<ClientContext> implements Paint
             int energyLevel = ctx.movement.energyLevel();
             if (energyLevel > 95) {
                 ctx.movement.running(true);
-            } else if (energyLevel > 70 && rand.nextFloat() < 0.1f) {
+            } else if (energyLevel > 70 && HideCollector.RAND.nextInt(0, 99) <= 9) {
                 ctx.movement.running(true);
-            } else if (energyLevel > 40 && rand.nextFloat() < 0.01f) {
+            } else if (energyLevel > 40 && HideCollector.RAND.nextInt(0, 99) <= 1) {
                 ctx.movement.running(true);
             }
         }

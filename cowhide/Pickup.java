@@ -8,15 +8,8 @@ import java.util.Random;
  * Created by Ryan on 11/04/2018.
  */
 public class Pickup extends Task<ClientContext> {
-    private int pickedUp = 0;
-
-    // Random number gen to randomly pickup bones
-    private Random rand = null;
-
     public Pickup(ClientContext ctx) {
         super(ctx);
-
-        rand = new Random();
     }
 
     public boolean activate() {
@@ -30,7 +23,7 @@ public class Pickup extends Task<ClientContext> {
 
         if (hide.inViewport()) {
             // 98% of time take hides. 2% take bones
-            if (rand.nextFloat() > 0.02f) {
+            if (HideCollector.RAND.nextInt(0, 99) >= 2) {
                 hide.interact("Take", "Cowhide");
             } else {
                 hide.interact("Take", "Bones");
