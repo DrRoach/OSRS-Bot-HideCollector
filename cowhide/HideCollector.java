@@ -1,4 +1,4 @@
-package scripts;
+package scripts.cowhide;
 
 import org.powerbot.script.PaintListener;
 import org.powerbot.script.PollingScript;
@@ -11,7 +11,6 @@ import javax.imageio.ImageIO;
 import java.awt.*;
 import java.net.URL;
 import java.util.Random;
-import java.util.Timer;
 
 @Script.Manifest(name="Cow Hide Collector", description="Simple lumbridge cow hide collector and banker")
 

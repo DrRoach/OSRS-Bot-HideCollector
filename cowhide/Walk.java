@@ -1,4 +1,4 @@
-package scripts;
+package scripts.cowhide;
 
 import org.powerbot.script.rt4.ClientContext;
 import org.powerbot.script.rt4.GameObject;

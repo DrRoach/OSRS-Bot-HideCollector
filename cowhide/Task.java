@@ -1,4 +1,4 @@
-package scripts;
+package scripts.cowhide;
 
 import org.powerbot.script.ClientContext;
 import org.powerbot.script.ClientAccessor;

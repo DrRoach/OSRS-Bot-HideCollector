@@ -1,7 +1,6 @@
-package scripts;
+package scripts.cowhide;
 
 import org.powerbot.script.rt4.ClientContext;
-import org.powerbot.script.rt4.TilePath;
 
 /**
  * Created by Ryan on 11/04/2018.
