@@ -30,12 +30,10 @@ public class HideCollector extends PollingScript<ClientContext> implements Paint
     private int HIDES_COLLECTED = 0;
     // Keep track of our inventory size
     private int INVENTORY_COUNT = 0;
-    // Keep track of our run time
-    private long _startTime;
     // The price of hides at start
-    private int _hidePrice = 1;
+    private int HIDE_PRICE = 1;
     // Keep track of Bury so we know how many bones we've buried
-    private int _bonesBuried = 0 ;
+    private int BONES_BURIED = 0 ;
 
     // Path from field to bank
     private static final Tile[] PATH_FIELD_BANK = {
@@ -70,10 +68,8 @@ public class HideCollector extends PollingScript<ClientContext> implements Paint
 
         INVENTORY_COUNT = ctx.inventory.select().count();
 
-        _startTime = System.currentTimeMillis();
-
         GeItem hide = new GeItem(HIDE_IDS[0]);
-        _hidePrice = hide.price;
+        HIDE_PRICE = hide.price;
 
         taskList.addAll(Arrays.asList(new Bank(ctx), new Bury(ctx), new Pickup(ctx),
                 new WalkToBank(ctx, pathToBank, pathStairsToBank), new WalkToField(ctx, pathToField, pathBankToStairs)));
@@ -118,35 +114,43 @@ public class HideCollector extends PollingScript<ClientContext> implements Paint
 
     @Override
     public void repaint(Graphics g) {
-        Image background = getImage("http://oi68.tinypic.com/aaem35.jpg");
-        Font font1 = new Font("Raleway", 0, 20);
+        int width = 200;
+        int height = 130;
 
-        g.drawImage(background, 0, 295, null);
+        Color rectBankground = new Color(0, 0, 0, 127);
+        g.setColor(rectBankground);
 
-        // Setup our font
+        g.fillRect(10, 10, width, height);
+
+        g.setColor(Color.BLACK);
+        g.drawRect(10, 10, width, height);
+
         g.setColor(Color.WHITE);
-        g.setFont(font1);
+        Font font = new Font("Raleway", 0, 12);
+        g.setFont(font);
 
-        // Work out how long we've been running for
-        long runTime = System.currentTimeMillis() - _startTime;
+        long runTime = getRuntime();
         long hours = (runTime / 1000) / 3600;
         long minutes = ((runTime / 1000) / 60) % 60;
         long seconds = (runTime / 1000) % 60;
 
-        // Work out our p/h stats
         float hidesPH = 0;
         long profitPH = 0;
+
         if (HIDES_COLLECTED > 0) {
             hidesPH = HIDES_COLLECTED / ((runTime / 1000.0f) / 3600.0f);
-            profitPH = _hidePrice * (long) hidesPH;
+            profitPH = HIDE_PRICE * (long) hidesPH;
         }
 
         // Draw our stats to screen
-        g.drawString("" + HIDES_COLLECTED, 259, 353);
-        g.drawString("" + (int) hidesPH, 259, 378);
-        g.drawString("" + profitPH, 259, 403);
-        g.drawString("" + _bonesBuried, 423, 351);
-        g.drawString(hours + ":" + minutes + ":" + seconds, 386, 374);
+        g.drawString("Hides Collected: " + HIDES_COLLECTED, 20, 40);
+        g.drawString("Hides PH: " + (int) hidesPH, 20, 55);
+        g.drawString("Profit PH: " + profitPH, 20, 70);
+        g.drawString("Bones Buried: " + BONES_BURIED, 20, 85);
+        g.drawString("Time Ran: " + String.format("%02d", hours) + ":" + String.format("%02d", minutes) + ":" + String.format("%02d", seconds), 20, 100);
+
+        Font byFont = new Font("Raleway", 0, 8);
+        g.drawString("Made by DrRoach", 20, 125);
     }
 
     private Image getImage(String url) {
