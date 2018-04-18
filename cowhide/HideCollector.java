@@ -40,7 +40,6 @@ public class HideCollector extends PollingScript<ClientContext> implements Paint
     // The price of hides at start
     private int HIDE_PRICE = 1;
 
-
     private Bury bury;
 
     // Path from field to bank
@@ -133,6 +132,8 @@ public class HideCollector extends PollingScript<ClientContext> implements Paint
                     break;
                 }
             }
+        } else if (ctx.inventory.select().count() == 0 && INVENTORY_COUNT > 0) {
+            INVENTORY_COUNT = 0;
         }
 
         // Check to see if we should turn on running
